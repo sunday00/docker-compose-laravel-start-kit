@@ -1,0 +1,17 @@
+{
+  "posts" : [
+    {
+      "title" : "My alter Post",
+      "author" : "Sunday001"
+    },
+    {
+      "title" : "Alter Other Cool Post",
+      "author" : "Sunday001"
+    }
+  ],
+  "profile": {
+    "username" : "Sunday001",
+    "family_name" : "Kim",
+    "email" : "sunday00_alter@grayfield.net"
+  }
+}
