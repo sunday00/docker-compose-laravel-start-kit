@@ -2,55 +2,63 @@ version: '3.8'
 
 services:
   nginx:
-    # image: nginx:stable-alpine
+    container_name: nginx_${APP_NAME}
     build:
       context: .
       dockerfile: nginx.dockerfile
     ports:
-      - 88:80
+      - 80:80
     volumes:
-      - ./src:/var/www/html
+      - ./src:${WEB_DIR}
     depends_on:
+      - mysql
       - php
+  mysql:
+    container_name: mysql_${APP_NAME}
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - 3306:3306
+      - 33070:33060
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - ./mysql:/var/lib/mysql
   php:
+    container_name: php_${APP_NAME}
     build:
       context: .
       dockerfile: php.dockerfile
     volumes:
-      - ./src:/var/www/html
-    depends_on:
-      - mysql
-  mysql:
-    image: mysql:5.7
-    ports:
-      - 3308:3306
-    environment:
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
-      MYSQL_PSSWORD: secret
-      MYSQL_ROOT_PASSWORD: secret
-    volumes:
-      - ./mysql:/var/lib/mysql
+      - ./src:${WEB_DIR}
   composer:
+    container_name: composer_${APP_NAME}
     build:
       context: .
       dockerfile: composer.dockerfile
     volumes:
-      - ./src:/var/www/html
-    working_dir: /var/www/html
-  npm:
-    image: node:current-alpine
-    volumes:
-      - ./src:/var/www/html
-    entrypoint: ["npm"]
-    working_dir: /var/www/html
+      - ./src:${WEB_DIR}
+    working_dir: ${WEB_DIR}/current
   artisan:
+    container_name: artisan_${APP_NAME}
     build:
       context: .
       dockerfile: php.dockerfile
     volumes:
-      - ./src:/var/www/html
-    working_dir: /var/www/html
+      - ./src:${WEB_DIR}
+    working_dir: ${WEB_DIR}/current
     depends_on:
       - mysql
-    entrypoint: ["php", '/var/www/html/artisan']
+    entrypoint: [ "php", "${WEB_DIR}/artisan" ]
+  npm:
+    container_name: npm_${APP_NAME}
+    build:
+      context: .
+      dockerfile: npm.dockerfile
+    volumes:
+      - ./src:${WEB_DIR}
+    entrypoint: [ "npm" ]
+    working_dir: ${WEB_DIR}/current
